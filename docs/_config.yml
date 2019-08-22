@@ -1,0 +1,19 @@
+---
+title: Your awesome title
+email: mark@taqtiqa.com
+description: > # this means to ignore newlines until "baseurl:"
+  Jlenv. Compile and install multiple versions of Julia. [Julia](https://www.julialang.org/).
+github_username:  jlenv
+include_related_posts: true
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+include:
+  - README.md
+  - LICENSE.md
+  - ISSUE_TEMPLATE.md
+  - PULL_REQUEST_TEMPLATE.md
+  - CONTRIBUTING.md
+  - CONDUCT.md
