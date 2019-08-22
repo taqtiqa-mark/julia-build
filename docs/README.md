@@ -2,7 +2,18 @@
 
 # julia-build
 
-This project was forked from [ruby-build](https://github.com/rbenv/ruby-build), and modified for [julia](https://github.com/JuliaLang/julia).
+Julia-build is a command-line utility tool that makes it easy to compile, 
+install and remove virtually any version of [Julia](https://www.julialang.org), 
+using downloaded source files.
+
+Julia-build is exposed as a plugin for [jlenv](https://github.com/jlenv/julia-build)
+that provides the `jlenv install` command.
+Or simply as `julia-build` when used as a standalone program.
+
+* [Installing](#installing)
+* [Upgrading](#upgrading)
+* [Troubleshooting](#troubleshooting)
+* Writing [[custom build definitions|Definitions]]
 
   - [jlenv](https://github.com/jlenv/jlenv)
   - [Julia definitions](https://github.com/jlenv/julia-build/tree/master/share/julia-build)
@@ -10,13 +21,7 @@ This project was forked from [ruby-build](https://github.com/rbenv/ruby-build), 
 
 ---
 
-julia-build is a command-line utility that makes it easy to install virtually any
-version of Julia, from source.
-
-It is available as a plugin for [jlenv](https://github.com/jlenv/julia-build) that
-provides the `jlenv install` command, or as a standalone program.
-
-## Installation
+## Installing
 
 ```sh
 # As an jlenv plugin
@@ -33,6 +38,155 @@ $ PREFIX=/usr/local ./julia-build/install.sh
 ```sh
 # As an jlenv plugin
 $ cd "$(jlenv root)"/plugins/julia-build && git pull
+```
+
+## Suggested build environment
+
+Julia-build will try its best to download and compile the wanted Julia version,
+but sometimes compilation fails because of unmet system dependencies, or
+compilation succeeds but the new Julia version exhibits weird failures at
+runtime. The following instructions are our recommendations for a sane build
+environment.
+
+* **Chef (zero), etc.**
+If you don't already, we suggest you manage your software installation
+prerequisites, environment and configuration using Chef, Ansible, Salt, Puppet, etc.
+In the case of [Chef](https://www.chef.io/) ([Zero](https://github.com/chef/chef-zero)) 
+the [jlenv](https://github.com/jlenv/jlenv-cookbook) cookbook provides the 
+[resources](https://docs.chef.io/resource.html) to write Julia installation 
+management recipes.
+
+
+* **macOS:**
+
+  If you haven't done so, install Xcode Command Line Tools
+  (`xcode-select --install`) and [Homebrew][https://brew.sh]. Then:
+
+    ```sh
+    brew install <package-dependencies>
+    ```
+    Where the package-dependencies are defined in the [jlenv-cookbook](https://github.com/jlenv/jlenv) 
+    package [dependencies file](https://github.com/jlenv/jlenv-cookbook/blob/master/libraries/package_deps.rb#L38)
+
+* **Ubuntu/Debian/Mint:**
+
+    ```sh
+    apt-get install -y <package-dependencies>
+    ```
+    Where the package-dependencies are defined in the [jlenv-cookbook](https://github.com/jlenv/jlenv) 
+    package [dependencies file](https://github.com/jlenv/jlenv-cookbook/blob/master/libraries/package_deps.rb#L38)
+
+* **CentOS/Fedora:**
+
+    ```sh
+    yum install -y <package-dependencies>
+    ```
+    Where the package-dependencies are defined in the [jlenv-cookbook](https://github.com/jlenv/jlenv) 
+    package [dependencies file](https://github.com/jlenv/jlenv-cookbook/blob/master/libraries/package_deps.rb#L38)
+
+* **openSUSE:**
+
+    ```sh
+    zypper install -y <package-dependencies>
+    ```
+    Where the package-dependencies are defined in the [jlenv-cookbook](https://github.com/jlenv/jlenv) 
+    package [dependencies file](https://github.com/jlenv/jlenv-cookbook/blob/master/libraries/package_deps.rb#L38)
+
+* **Arch Linux:**
+
+T.B.A.
+
+### Notes
+
+#### GCC compatibility
+
+Julia is currently built using gcc-5.
+
+## Updating julia-build
+
+If you have trouble installing a Julia version, first try to update julia-build to
+get the latest bug fixes and Julia definitions.
+
+First locate it on your system:
+
+```sh
+which julia-build
+ls "$(jlenv root)"/plugins
+```
+<!---
+If it's in `/usr/local/bin` on a Mac, you've probably installed it via
+[Homebrew][https:brew.sh]:
+
+```
+brew upgrade julia-build
+```
+--->
+
+Or, if you have it installed via git as an jlenv plugin:
+
+```sh
+cd "$(jlenv root)"/plugins/julia-build && git pull
+```
+
+## Troubleshooting
+
+### "mkdir: /Volumes/Macintosh: Not a directory"
+
+This can occur if you have [more than one disk drive][disks] and your home directory is physically mounted on a volume that might have a space in its name, such as "Macintosh HD":
+
+```
+$ df
+/dev/disk2    ...  /
+/dev/disk1s2  ...  /Volumes/Macintosh HD
+```
+
+The easiest solution is to avoid building a Julia version to any path that has space characters in it. So instead of building into `~/.jlenv/versions/<version>`, which is the default for `jlenv install <version>`, instead you could install into `/opt/julias/<version>` and symlink `/opt/julias` as `~/.jlenv/versions` so jlenv continues to work as before:
+
+```sh
+sudo mkdir -p /opt/julias
+sudo chown "${USER}:staff" /opt/julias
+rm -rf ~/.jlenv/versions                 # This will DELETE your existing Julia versions!
+ln -s /opt/julias ~/.jlenv/versions
+```
+
+Now proceed as following:
+
+```
+julia-build <version> /opt/julias/<version>
+```
+
+[disks]: https://github.com/sstephenson/ruby-build/issues/748#issuecomment-95143238
+
+### No space left on device
+
+Some distributions will mount a tmpfs partition with low disk space to `/tmp`, such as 250 MB. You can check this with:
+
+    mount | grep tmp
+    df -h | grep tmp
+
+Compiling Julia can require up to 4 or 5GiB, so you should temporarily resize `/tmp` to allow more usage:
+
+    rm -rf /tmp/julia-build*
+    mount -o remount,size=5G,noatime /tmp
+
+### Lower the number of parallel jobs
+
+On hosts that report a large amount of CPU cores, but don't have plenty of RAM, you might get:
+
+```
+gcc: internal compiler error: Killed (program cc1)
+```
+
+The solution is to use `MAKE_OPTS=-j2` to limit `make` to maximum of 2 parallel processes:
+
+```bash
+export MAKE_OPTS=-j2
+```
+
+or also with writable temp directory:
+
+```bash
+TMPDIR=~/tmp MAKE_OPTS=-j2 jlenv install 1.0.3
 ```
 
 ## Usage
