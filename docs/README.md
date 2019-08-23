@@ -10,14 +10,31 @@ Julia-build is exposed as a plugin for [jlenv](https://github.com/jlenv/julia-bu
 that provides the `jlenv install` command.
 Or simply as `julia-build` when used as a standalone program.
 
-* [Installing](#installing)
-* [Upgrading](#upgrading)
-* [Troubleshooting](#troubleshooting)
-* Writing [[custom build definitions|Definitions]]
+# Table of Contents
 
-  - [jlenv](https://github.com/jlenv/jlenv)
-  - [Julia definitions](https://github.com/jlenv/julia-build/tree/master/share/julia-build)
-  - [Wiki](https://github.com/jlenv/julia-build/wiki)
+<!--ts-->
+  * [Installing](#installing)
+  * [Upgrading](#upgrading)
+  * [Notes](#notes)
+      * [GCC compatibility](#gcc-compatibility)
+      * [Suggested build environment](#suggested-build-environment)
+  * [Troubleshooting](#troubleshooting)
+      * ["mkdir: /Volumes/Macintosh: Not a directory"](#mkdir-volumesmacintosh-not-a-directory)
+      * [No space left on device](#no-space-left-on-device)
+      * [Lower the number of parallel jobs](#lower-the-number-of-parallel-jobs)
+  * [Usage](#usage)
+      * [Basic Usage](#basic-usage)
+      * [Advanced Usage](#advanced-usage)
+        * [Custom Build Definitions](#custom-build-definitions)
+        * [Custom Build Configuration](#custom-build-configuration)
+        * [Applying Patches](#applying-patches)
+        * [Checksum Verification](#checksum-verification)
+        * [Keeping the build directory after installation](#keeping-the-build-directory-after-installation)
+  * [Definitions](#definitions)
+      * [Build steps](#build-steps)
+      * [Constraints](#constraints)
+      * [Hooks](#hooks)
+<!--te-->
 
 ---
 
@@ -33,14 +50,40 @@ $ git clone https://github.com/jlenv/julia-build.git
 $ PREFIX=/usr/local ./julia-build/install.sh
 ```
 
-### Upgrading
+## Upgrading
+
+If you have trouble installing a Julia version, first try to update julia-build to
+get the latest bug fixes and Julia definitions.
+
+First locate it on your system:
 
 ```sh
-# As an jlenv plugin
-$ cd "$(jlenv root)"/plugins/julia-build && git pull
+which julia-build
+ls "$(jlenv root)"/plugins
+```
+<!---
+If it's in `/usr/local/bin` on a Mac, you've probably installed it via
+[Homebrew][https:brew.sh]:
+
+```
+brew upgrade julia-build
+```
+--->
+
+Or, if you have it installed via git as an jlenv plugin:
+
+```sh
+cd "$(jlenv root)"/plugins/julia-build && git pull
 ```
 
-## Suggested build environment
+## Notes
+
+### GCC compatibility
+
+Julia is currently built using `gcc-5`.  The Julia build script points this to 
+`gcc`.
+
+### Suggested build environment
 
 Julia-build will try its best to download and compile the wanted Julia version,
 but sometimes compilation fails because of unmet system dependencies, or
@@ -48,13 +91,14 @@ compilation succeeds but the new Julia version exhibits weird failures at
 runtime. The following instructions are our recommendations for a sane build
 environment.
 
-* **Chef (zero), etc.**
-If you don't already, we suggest you manage your software installation
-prerequisites, environment and configuration using Chef, Ansible, Salt, Puppet, etc.
-In the case of [Chef](https://www.chef.io/) ([Zero](https://github.com/chef/chef-zero)) 
-the [jlenv](https://github.com/jlenv/jlenv-cookbook) cookbook provides the 
-[resources](https://docs.chef.io/resource.html) to write Julia installation 
-management recipes.
+* **Chef (zero), etc.:**
+
+  If you don't already, we suggest you manage your software installation
+  prerequisites, environment and configuration using Chef, Ansible, Salt, Puppet, etc.
+  In the case of [Chef](https://www.chef.io/) ([Zero](https://github.com/chef/chef-zero)) 
+  the [jlenv](https://github.com/jlenv/jlenv-cookbook) cookbook provides the 
+  [resources](https://docs.chef.io/resource.html) to write Julia installation 
+  management recipes.
 
 
 * **macOS:**
@@ -96,43 +140,13 @@ management recipes.
 
 T.B.A.
 
-### Notes
-
-#### GCC compatibility
-
-Julia is currently built using gcc-5.
-
-## Updating julia-build
-
-If you have trouble installing a Julia version, first try to update julia-build to
-get the latest bug fixes and Julia definitions.
-
-First locate it on your system:
-
-```sh
-which julia-build
-ls "$(jlenv root)"/plugins
-```
-<!---
-If it's in `/usr/local/bin` on a Mac, you've probably installed it via
-[Homebrew][https:brew.sh]:
-
-```
-brew upgrade julia-build
-```
---->
-
-Or, if you have it installed via git as an jlenv plugin:
-
-```sh
-cd "$(jlenv root)"/plugins/julia-build && git pull
-```
-
 ## Troubleshooting
 
 ### "mkdir: /Volumes/Macintosh: Not a directory"
 
-This can occur if you have [more than one disk drive][disks] and your home directory is physically mounted on a volume that might have a space in its name, such as "Macintosh HD":
+This can occur if you have [more than one disk drive](https://github.com/sstephenson/ruby-build/issues/748#issuecomment-95143238) 
+and your home directory is physically mounted on a volume that might have a
+space in its name, such as "Macintosh HD":
 
 ```
 $ df
@@ -154,8 +168,6 @@ Now proceed as following:
 ```
 julia-build <version> /opt/julias/<version>
 ```
-
-[disks]: https://github.com/sstephenson/ruby-build/issues/748#issuecomment-95143238
 
 ### No space left on device
 
@@ -249,13 +261,13 @@ read from `STDIN`:
 
 ```sh
 # applying a single patch
-$ jlenv install --patch 1.9.3-p429 < /path/to/julia.patch
+$ jlenv install --patch 1.0.3-p4 < /path/to/julia.patch
 
 # applying a patch from HTTP
-$ jlenv install --patch 1.9.3-p429 < <(curl -sSL http://git.io/julia.patch)
+$ jlenv install --patch 1.0.3-p4 < <(curl -sSL http://git.io/julia.patch)
 
 # applying multiple patches
-$ cat fix1.patch fix2.patch | jlenv install --patch 1.9.3-p429
+$ cat fix1.patch fix2.patch | jlenv install --patch 1.0.3-p4
 ```
 
 #### Checksum Verification
@@ -265,7 +277,7 @@ automatically verify the SHA2 checksum of each downloaded package before
 installing it.
 
 Checksums are optional and specified as anchors on the package URL in each
-definition. (All bundled definitions include checksums.)
+definition.
 
 #### Keeping the build directory after installation
 
@@ -278,10 +290,93 @@ using `--keep` with the `jlenv install` command. You should specify the
 location of the source code with the `JULIA_BUILD_BUILD_PATH` environment
 variable when using `--keep` with `julia-build`.
 
-## Getting Help
+## Definitions
 
-Please see Julia-Build wiki for solutions to common problems.
+Build definitions are simple shell scripts that get sourced in the julia-build
+environment so they can invoke functions that fetch necessary packages and
+compile them into the destination directory.  The complete list of  is here 
+[Julia definitions](https://github.com/jlenv/julia-build/tree/master/share/julia-build)
 
-  [jlenv]: https://github.com/jlenv/jlenv
-  [definitions]: https://github.com/jlenv/julia-build/tree/master/share/julia-build
-  [wiki]: https://github.com/jlenv/julia-build/wiki
+The basic invocation from a build definition is the function to download and
+install a package from a tarball:
+
+```sh
+install_package PACKAGE_NAME PACKAGE_URL#SHA2 [BUILD_STEPS...] [--if CONDITION]
+```
+
+`PACKAGE_URL` specifies the location of the tarball where the package is
+published. After download, its signature verified against the optional SHA2
+checksum.
+
+`PACKAGE_NAME` is the name of the directory to `cd` into after extracting the
+tarball. The subsequent `BUILD_STEPS` will be executed within that directory.
+
+Alternatively, a package may be retrieved via git or SVN:
+
+```sh
+install_git PACKAGE_NAME GIT_URL BRANCH [...]
+install_svn PACKAGE_NAME SVN_URL REVISION [...]
+```
+
+`BUILD_STEPS` is a list of operations to run in order to complete the installation
+of a Julia version. If empty, the list defaults to "standard".
+
+`CONDITION` is a way to specify that this package is optional and will only be
+installed if the function of the name `CONDITION` returns a success status. Some
+condition functions available to built-in definitions are:
+
+* **needs_yaml**: true if there isn't an adequate libyaml found on the system
+* **has_broken_mac_openssl**: true for Apple-patched openssl v0.9.8
+
+
+### Build steps
+
+Pre-build steps:
+
+* **ldflags_dirs**: Ensures that directories listed in `LDFLAGS` exist.
+* **auto_tcltk**: Detects XQuartz on OS X or disables TK.
+* **autoconf**: Runs `autoconf`. Prerequisite for "standard" step when fetching
+  Julia versions from git/SVN.
+
+Build steps:
+
+* **standard**: `./configure` + `make`. This is the default.
+* **topaz**: copies over pre-built Topaz.
+* **julia**: `julia setup.jl`. Used when installing Julia Packages.
+* **mac_openssl**: builds OpenSSL on OS X.
+
+Post-build steps:
+
+* **verify_openssl**: Checks that openssl extension can be loaded.
+
+### Constraints
+
+These constraints should appear in the beginning of the build definition to
+check whether the system is compatible with the Julia version:
+
+* **require_gcc**: ensures that gcc is gcc-5. Required check for all Julia.
+
+### Hooks
+
+Before and after installing each package, julia-build invokes these functions:
+
+```sh
+before_install_package PACKAGE_NAME
+after_install_package PACKAGE_NAME
+```
+
+You can take advantage of this by defining these functions in the definition
+itself and filtering by package name as necessary.  Example:
+
+```sh
+before_install_package() {
+  local package_name="$1"
+  case "$package_name" in
+  julia-* )
+    # do something for all Julia packages
+    ;;
+  esac
+}
+
+install_package ...
+```
