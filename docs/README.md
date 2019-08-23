@@ -13,6 +13,7 @@ Or simply as `julia-build` when used as a standalone program.
 # Table of Contents
 
 <!--ts-->
+  * [Requirements](#requirements)
   * [Installing](#installing)
   * [Upgrading](#upgrading)
   * [Notes](#notes)
@@ -37,6 +38,14 @@ Or simply as `julia-build` when used as a standalone program.
 <!--te-->
 
 ---
+
+## Requirements
+
+The Julia build requirements should be inplace, these are elaborated below, 
+[Suggested build environment](#suggested-build-environment). 
+Please note, the [jlenv](https://github.com/jlenv/jlenv-cookbook) cookbook 
+provides the [resources](https://docs.chef.io/resource.html) to setup the 
+correct build environment and write Julia installation management recipes.
 
 ## Installing
 
