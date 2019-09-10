@@ -13,28 +13,34 @@ Or simply as `julia-build` when used as a standalone program.
 # Table of Contents
 
 <!--ts-->
-  * [Requirements](#requirements)
-  * [Installing](#installing)
-  * [Upgrading](#upgrading)
-  * [Notes](#notes)
-      * [GCC compatibility](#gcc-compatibility)
-      * [Suggested build environment](#suggested-build-environment)
-  * [Troubleshooting](#troubleshooting)
-      * ["mkdir: /Volumes/Macintosh: Not a directory"](#mkdir-volumesmacintosh-not-a-directory)
-      * [No space left on device](#no-space-left-on-device)
-      * [Lower the number of parallel jobs](#lower-the-number-of-parallel-jobs)
-  * [Usage](#usage)
-      * [Basic Usage](#basic-usage)
-      * [Advanced Usage](#advanced-usage)
-        * [Custom Build Definitions](#custom-build-definitions)
-        * [Custom Build Configuration](#custom-build-configuration)
-        * [Applying Patches](#applying-patches)
-        * [Checksum Verification](#checksum-verification)
-        * [Keeping the build directory after installation](#keeping-the-build-directory-after-installation)
-  * [Definitions](#definitions)
-      * [Build steps](#build-steps)
-      * [Constraints](#constraints)
-      * [Hooks](#hooks)
+
+* [Requirements](#requirements)
+* [Installing](#installing)
+* [Upgrading](#upgrading)
+* [Contributing](#contributing)
+    * [Running BATS test suite](#running-bats-test-suite)
+* [Notes](#notes)
+    * [GCC compatibility](#gcc-compatibility)
+    * [Suggested build environment](#suggested-build-environment)
+* [Troubleshooting](#troubleshooting)
+    * ["mkdir: /Volumes/Macintosh: Not a directory"](#mkdir-volumesmacintosh-not-a-directory)
+    * [No space left on device](#no-space-left-on-device)
+    * [Lower the number of parallel jobs](#lower-the-number-of-parallel-jobs)
+* [Usage](#usage)
+    * [Basic Usage](#basic-usage)
+    * [Advanced Usage](#advanced-usage)
+    * [Custom Build Definitions](#custom-build-definitions)
+    * [Custom Build Configuration](#custom-build-configuration)
+    * [Applying Patches](#applying-patches)
+    * [Checksum Verification](#checksum-verification)
+    * [Keeping the build directory after installation](#keeping-the-build-directory-after-installation)
+* [Definitions](#definitions)
+    * [Build steps](#build-steps)
+    * [Constraints](#constraints)
+    * [Hooks](#hooks)
+
+<!-- Added by: Mark Van de Vyver, at: Tue 10 Sep 18:49:21 AEST 2019 -->
+
 <!--te-->
 
 ---
@@ -84,6 +90,26 @@ Or, if you have it installed via git as an jlenv plugin:
 ```sh
 cd "$(jlenv root)"/plugins/julia-build && git pull
 ```
+## Contributing
+
+Adding a Julia release is as simple as:
+
+1. Identify the Julia [tag]() string.  Example: `v1.3.0-alpha`.
+1. Copy one of the files in this rep's folder `share\julia-build`.  Give it 
+   the tag string as a name: `cp .\share\juila-build\v1.0.0 .\share\juila-build\v1.3.0-alpha`
+1. Open the newly created file and replace occurances of `v1.0.0` with `v1.3.0-alpha`
+
+### Running BATS test suite
+
+It is only neccessary to run the [BATS](https://github.com/sstephenson/bats) 
+test suite if functionality is added or a bug is fixed.
+
+Please add tests that exercise the functionality added, or guard against the 
+bug regressions.  To run tests:
+
+```bash
+script\test
+```
 
 ## Notes
 
@@ -102,13 +128,15 @@ environment.
 
 * **Chef (zero), etc.:**
 
-  If you don't already, we suggest you manage your software installation
-  prerequisites, environment and configuration using Chef, Ansible, Salt, Puppet, etc.
+  If you don't already, we suggest you manage software installation
+  prerequisites, environment and configuration using one of 
+  [Chef](https://www.chef.io/) ([Zero](https://github.com/chef/chef-zero)), 
+  [Ansible](https://www.ansible.com), [Salt](https://www.saltstack.com), 
+  [Puppet](https://puppet.com/), etc.
   In the case of [Chef](https://www.chef.io/) ([Zero](https://github.com/chef/chef-zero)) 
   the [jlenv](https://github.com/jlenv/jlenv-cookbook) cookbook provides the 
   [resources](https://docs.chef.io/resource.html) to write Julia installation 
   management recipes.
-
 
 * **macOS:**
 
@@ -217,11 +245,11 @@ TMPDIR=~/tmp MAKE_OPTS=-j2 jlenv install 1.0.3
 ```sh
 # As an jlenv plugin
 $ jlenv install --list                 # lists all available versions of Julia
-$ jlenv install v0.6.0                  # installs Julia v0.6.0 to ~/.jlenv/versions
+$ jlenv install v1.0.1                 # installs Julia v1.0.1 to ~/.jlenv/versions
 
 # As a standalone program
-$ julia-build --definitions             # lists all available versions of Julia
-$ julia-build 0.6.0 ~/local/julia-v0.6.0  # installs Julia v0.6.0 to ~/local/julia-0.6.0
+$ julia-build --definitions               # lists all available versions of Julia
+$ julia-build 1.0.1 ~/local/julia-v1.0.1  # installs Julia v1.0.1 to ~/local/julia-1.0.1
 ```
 
 julia-build does not check for system dependencies before downloading and

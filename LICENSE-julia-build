@@ -1,3 +1,6 @@
+Copyright (c) 2019 Mark Van de Vyver
+Copyright (c) 2019 Taqtiqa LLC
+Copyright (c) 2017 Hiroaki Mikami
 Copyright (c) 2012-2013 Sam Stephenson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of

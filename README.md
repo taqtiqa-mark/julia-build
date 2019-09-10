@@ -12,11 +12,15 @@ Or simply as `julia-build` when used as a standalone program.
 
 # Table of Contents
 
-<!--tc-->
+<!--ts-->
+
   * [Installation](#installation)
   * [Upgrading](#upgrading)
   * [Usage](#usage)
   * [Documentation](#documentation)
+
+<!-- Added by: Mark Van de Vyver, at: Tue 10 Sep 18:47:40 AEST 2019 -->
+
 <!--te-->
 
 ---
@@ -51,11 +55,11 @@ $ cd "$(jlenv root)"/plugins/julia-build && git pull
 ```sh
 # As an jlenv plugin
 $ jlenv install --list                    # lists all available versions of Julia
-$ jlenv install v0.6.0                    # installs Julia v0.6.0 to ~/.jlenv/versions
+$ jlenv install v1.0.1                    # installs Julia v1.0.1 to ~/.jlenv/versions
 
 # As a standalone program
 $ julia-build --definitions               # lists all available versions of Julia
-$ julia-build 0.6.0 ~/local/julia-v0.6.0  # installs Julia v0.6.0 to ~/local/julia-0.6.0
+$ julia-build 1.0.1 ~/local/julia-v1.0.1  # installs Julia v1.0.1 to ~/local/julia-1.0.1
 ```
 
 julia-build does not check for system dependencies before downloading and

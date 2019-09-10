@@ -795,7 +795,7 @@ require_llvm() {
           local homebrew_package="llvm@$llvm_version"
           { echo
             colorize 1 "ERROR"
-            echo ": Rubinius will not be able to compile using Apple's LLVM-based "
+            echo ": Julia will not be able to compile using Apple's LLVM-based "
             echo "build tools on OS X. You will need to install LLVM $llvm_version first."
             echo
             colorize 1 "TO FIX THE PROBLEM"
