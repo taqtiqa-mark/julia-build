@@ -58,34 +58,9 @@ assert_build_log() {
   assert_output
 }
 
-@test "yaml is installed for julia" {
-  cached_tarball "yaml-0.1.6"
-  cached_tarball "julia-2.0.0"
-
-  stub uname '-s : echo Linux'
-  stub brew false
-  stub_make_install
-  stub_make_install
-
-  install_fixture definitions/needs-yaml
-  assert_success
-
-  unstub uname
-  unstub make
-
-  assert_build_log <<OUT
-yaml-0.1.6: --prefix=$INSTALL_ROOT
-make -j 2
-make install
-julia-2.0.0: --prefix=$INSTALL_ROOT
-make -j 2
-make install
-OUT
-}
-
 @test "apply julia patch before building" {
   cached_tarball "yaml-0.1.6"
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   stub uname '-s : echo Linux'
   stub brew false
@@ -105,7 +80,7 @@ yaml-0.1.6: --prefix=$INSTALL_ROOT
 make -j 2
 make install
 patch -p0 --force -i $TMP/julia-patch.XXX
-julia-2.0.0: --prefix=$INSTALL_ROOT
+julia-1.1.0: --prefix=$INSTALL_ROOT
 make -j 2
 make install
 OUT
@@ -113,7 +88,7 @@ OUT
 
 @test "apply julia patch from git diff before building" {
   cached_tarball "yaml-0.1.6"
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   stub uname '-s : echo Linux'
   stub brew false
@@ -133,38 +108,14 @@ yaml-0.1.6: --prefix=$INSTALL_ROOT
 make -j 2
 make install
 patch -p1 --force -i $TMP/julia-patch.XXX
-julia-2.0.0: --prefix=$INSTALL_ROOT
-make -j 2
-make install
-OUT
-}
-
-@test "yaml is linked from Homebrew" {
-  cached_tarball "julia-2.0.0"
-
-  brew_libdir="$TMP/homebrew-yaml"
-  mkdir -p "$brew_libdir"
-
-  stub uname '-s : echo Linux'
-  stub brew "--prefix libyaml : echo '$brew_libdir'" false
-  stub_make_install
-
-  install_fixture definitions/needs-yaml
-  assert_success
-
-  unstub uname
-  unstub brew
-  unstub make
-
-  assert_build_log <<OUT
-julia-2.0.0: --prefix=$INSTALL_ROOT --with-libyaml-dir=$brew_libdir
+julia-1.1.0: --prefix=$INSTALL_ROOT
 make -j 2
 make install
 OUT
 }
 
 @test "readline is linked from Homebrew" {
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   readline_libdir="$TMP/homebrew-readline"
   mkdir -p "$readline_libdir"
@@ -173,7 +124,7 @@ OUT
   stub_make_install
 
   run_inline_definition <<DEF
-install_package "julia-2.0.0" "http://julia-lang.org/julia/2.0/julia-2.0.0.tar.gz"
+install_package "julia-1.1.0" "https://github.com/JuliaLang/julia/archive/v1.1.0.tar.gz"
 DEF
   assert_success
 
@@ -181,21 +132,21 @@ DEF
   unstub make
 
   assert_build_log <<OUT
-julia-2.0.0: --prefix=$INSTALL_ROOT --with-readline-dir=$readline_libdir
+julia-1.1.0: --prefix=$INSTALL_ROOT --with-readline-dir=$readline_libdir
 make -j 2
 make install
 OUT
 }
 
 @test "readline is not linked from Homebrew when explicitly defined" {
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   stub brew
   stub_make_install
 
   export JULIA_CONFIGURE_OPTS='--with-readline-dir=/custom'
   run_inline_definition <<DEF
-install_package "julia-2.0.0" "http://julia-lang.org/julia/2.0/julia-2.0.0.tar.gz"
+install_package "julia-1.1.0" "https://github.com/JuliaLang/julia/archive/v1.1.0.tar.gz"
 DEF
   assert_success
 
@@ -203,14 +154,14 @@ DEF
   unstub make
 
   assert_build_log <<OUT
-julia-2.0.0: --prefix=$INSTALL_ROOT --with-readline-dir=/custom
+julia-1.1.0: --prefix=$INSTALL_ROOT --with-readline-dir=/custom
 make -j 2
 make install
 OUT
 }
 
 @test "number of CPU cores defaults to 2" {
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   stub uname '-s : echo Darwin' false
   stub sysctl false
@@ -218,7 +169,7 @@ OUT
 
   export -n MAKE_OPTS
   run_inline_definition <<DEF
-install_package "julia-2.0.0" "http://julia-lang.org/julia/2.0/julia-2.0.0.tar.gz"
+install_package "julia-1.1.0" "https://github.com/JuliaLang/julia/archive/v1.1.0.tar.gz"
 DEF
   assert_success
 
@@ -226,14 +177,14 @@ DEF
   unstub make
 
   assert_build_log <<OUT
-julia-2.0.0: --prefix=$INSTALL_ROOT
+julia-1.1.0: --prefix=$INSTALL_ROOT
 make -j 2
 make install
 OUT
 }
 
 @test "number of CPU cores is detected on Mac" {
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   stub uname '-s : echo Darwin' false
   stub sysctl '-n hw.ncpu : echo 4'
@@ -241,7 +192,7 @@ OUT
 
   export -n MAKE_OPTS
   run_inline_definition <<DEF
-install_package "julia-2.0.0" "http://julia-lang.org/julia/2.0/julia-2.0.0.tar.gz"
+install_package "julia-1.1.0" "https://github.com/JuliaLang/julia/archive/v1.1.0.tar.gz"
 DEF
   assert_success
 
@@ -250,14 +201,14 @@ DEF
   unstub make
 
   assert_build_log <<OUT
-julia-2.0.0: --prefix=$INSTALL_ROOT
+julia-1.1.0: --prefix=$INSTALL_ROOT
 make -j 4
 make install
 OUT
 }
 
 @test "number of CPU cores is detected on FreeBSD" {
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   stub uname '-s : echo FreeBSD' false
   stub sysctl '-n hw.ncpu : echo 1'
@@ -265,7 +216,7 @@ OUT
 
   export -n MAKE_OPTS
   run_inline_definition <<DEF
-install_package "julia-2.0.0" "http://julia-lang.org/julia/2.0/julia-2.0.0.tar.gz"
+install_package "julia-1.1.0" "https://github.com/JuliaLang/julia/archive/v1.1.0.tar.gz"
 DEF
   assert_success
 
@@ -274,21 +225,21 @@ DEF
   unstub make
 
   assert_build_log <<OUT
-julia-2.0.0: --prefix=$INSTALL_ROOT
+julia-1.1.0: --prefix=$INSTALL_ROOT
 make -j 1
 make install
 OUT
 }
 
 @test "setting JULIA_MAKE_INSTALL_OPTS to a multi-word string" {
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   stub uname '-s : echo Linux'
   stub_make_install
 
   export JULIA_MAKE_INSTALL_OPTS="DOGE=\"such wow\""
   run_inline_definition <<DEF
-install_package "julia-2.0.0" "http://julia-lang.org/julia/2.0/julia-2.0.0.tar.gz"
+install_package "julia-1.1.0" "https://github.com/JuliaLang/julia/archive/v1.1.0.tar.gz"
 DEF
   assert_success
 
@@ -296,21 +247,21 @@ DEF
   unstub make
 
   assert_build_log <<OUT
-julia-2.0.0: --prefix=$INSTALL_ROOT
+julia-1.1.0: --prefix=$INSTALL_ROOT
 make -j 2
 make install DOGE="such wow"
 OUT
 }
 
 @test "setting MAKE_INSTALL_OPTS to a multi-word string" {
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   stub uname '-s : echo Linux'
   stub_make_install
 
   export MAKE_INSTALL_OPTS="DOGE=\"such wow\""
   run_inline_definition <<DEF
-install_package "julia-2.0.0" "http://julia-lang.org/julia/2.0/julia-2.0.0.tar.gz"
+install_package "julia-1.1.0" "https://github.com/JuliaLang/julia/archive/v1.1.0.tar.gz"
 DEF
   assert_success
 
@@ -318,7 +269,7 @@ DEF
   unstub make
 
   assert_build_log <<OUT
-julia-2.0.0: --prefix=$INSTALL_ROOT
+julia-1.1.0: --prefix=$INSTALL_ROOT
 make -j 2
 make install DOGE="such wow"
 OUT
@@ -334,7 +285,7 @@ OUT
 }
 
 @test "make on FreeBSD 9 defaults to gmake" {
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   stub uname "-s : echo FreeBSD" "-r : echo 9.1" false
   MAKE=gmake stub_make_install
@@ -347,7 +298,7 @@ OUT
 }
 
 @test "make on FreeBSD 10" {
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   stub uname "-s : echo FreeBSD" "-r : echo 10.0-RELEASE" false
   stub_make_install
@@ -359,7 +310,7 @@ OUT
 }
 
 @test "make on FreeBSD 11" {
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   stub uname "-s : echo FreeBSD" "-r : echo 11.0-RELEASE" false
   stub_make_install
@@ -371,7 +322,7 @@ OUT
 }
 
 @test "can use JULIA_CONFIGURE to apply a patch" {
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   executable "${TMP}/custom-configure" <<CONF
 #!$BASH
@@ -385,7 +336,7 @@ CONF
 
   export JULIA_CONFIGURE="${TMP}/custom-configure"
   run_inline_definition <<DEF
-install_package "julia-2.0.0" "http://julia-lang.org/pub/julia-2.0.0.tar.gz"
+install_package "julia-1.1.0" "https://github.com/JuliaLang/julia/archive/v1.1.0.tar.gz"
 DEF
   assert_success
 
@@ -395,7 +346,7 @@ DEF
 
   assert_build_log <<OUT
 apply -p1 -i /my/patch.diff
-julia-2.0.0: --prefix=$INSTALL_ROOT
+julia-1.1.0: --prefix=$INSTALL_ROOT
 make -j 2
 make install
 OUT
@@ -436,11 +387,11 @@ OUT
 }
 
 @test "initializes LDFLAGS directories" {
-  cached_tarball "julia-2.0.0"
+  cached_tarball "julia-1.1.0"
 
   export LDFLAGS="-L ${BATS_TEST_DIRNAME}/what/evs"
   run_inline_definition <<DEF
-install_package "julia-2.0.0" "http://julia-lang.org/julia/2.0/julia-2.0.0.tar.gz" ldflags_dirs
+install_package "julia-1.1.0" "https://github.com/JuliaLang/julia/archive/v1.1.0.tar.gz" ldflags_dirs
 DEF
   assert_success
 

@@ -25,9 +25,12 @@ OUT
 }
 
 @test "require_gcc on OS X 10.10" {
-  stub uname '-s : echo Darwin'
-  stub sw_vers '-productVersion : echo 10.10'
-  stub gcc '--version : echo 4.2.1' '--version : echo 4.2.1'
+  stub uname '-s : echo Darwin'\
+             '-s : echo Darwin'
+  stub sw_vers '-productVersion : echo 10.10'\
+               '-productVersion : echo 10.10'
+  stub gcc '--version : echo 4.2.1'\
+           '--version : echo 4.2.1'
 
   run_inline_definition <<DEF
 require_gcc
@@ -42,6 +45,11 @@ OUT
 }
 
 @test "require_gcc silences warnings" {
+  stub update-alternatives '--install /usr/bin/gcc gcc "/usr/bin/gcc-$1" 10 : echo  " gcc '/usr/bin/gcc-5' 10"'\
+                           '--install /usr/bin/g++ g++ "/usr/bin/g++-$1" 10 : echo  " g++ '/usr/bin/g++-5' 10"'\
+                           '--set gcc "/usr/bin/gcc-5" : echo "update-alternatives: using /usr/bin/gcc-5 to provide /usr/bin/gcc (gcc) in manual mode"'\
+                           '--set g++ "/usr/bin/g++-5" : echo "update-alternatives: using /usr/bin/g++-5 to provide /usr/bin/g++ (g++) in manual mode"'
+
   stub gcc '--version : echo warning >&2; echo 4.2.1' '--version : echo warning >&2; echo 4.2.1'
 
   run_inline_definition <<DEF

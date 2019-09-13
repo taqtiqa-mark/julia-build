@@ -1,1 +1,1 @@
-install_package "julia-2.0.0" "http://julia-lang.org/julia/2.0/julia-2.0.0.tar.gz"
+install_package "julia-1.1.0" "https://github.com/JuliaLang/julia/archive/v1.1.0.tar.gz"

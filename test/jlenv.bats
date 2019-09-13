@@ -15,8 +15,8 @@ stub_julia_build() {
 @test "install proper" {
   stub_julia_build 'echo julia-build "$@"'
 
-  run jlenv-install 2.1.2
-  assert_success "julia-build 2.1.2 ${JLENV_ROOT}/versions/2.1.2"
+  run jlenv-install 1.0.4
+  assert_success "julia-build 1.0.4 ${JLENV_ROOT}/versions/1.0.4"
 
   unstub julia-build
   unstub jlenv-hooks
@@ -25,10 +25,10 @@ stub_julia_build() {
 
 @test "install jlenv local version by default" {
   stub_julia_build 'echo julia-build "$1"'
-  stub jlenv-local 'echo 2.1.2'
+  stub jlenv-local 'echo 1.0.4'
 
   run jlenv-install
-  assert_success "julia-build 2.1.2"
+  assert_success "julia-build 1.0.4"
 
   unstub julia-build
   unstub jlenv-local
@@ -36,16 +36,16 @@ stub_julia_build() {
 
 @test "list available versions" {
   stub_julia_build \
-    "--definitions : echo 1.8.7 1.9.3-p0 1.9.3-p194 2.1.2 | tr ' ' $'\\n'"
+    "--definitions : echo 0.7.0 1.0.0 1.1.0 1.0.4 | tr ' ' $'\\n'"
 
   run jlenv-install --list
   assert_success
   assert_output <<OUT
 Available versions:
-  1.8.7
-  1.9.3-p0
-  1.9.3-p194
-  2.1.2
+  0.7.0
+  1.0.0
+  1.1.0
+  1.0.4
 OUT
 
   unstub julia-build
@@ -54,16 +54,16 @@ OUT
 @test "nonexistent version" {
   stub brew false
   stub_julia_build 'echo ERROR >&2 && exit 2' \
-    "--definitions : echo 1.8.7 1.9.3-p0 1.9.3-p194 2.1.2 | tr ' ' $'\\n'"
+    "--definitions : echo 0.7.0 1.0.3-rc1 1.0.3-rc2 1.0.4 | tr ' ' $'\\n'"
 
-  run jlenv-install 1.9.3
+  run jlenv-install 1.0.3
   assert_failure
   assert_output <<OUT
 ERROR
 
-The following versions contain \`1.9.3' in the name:
-  1.9.3-p0
-  1.9.3-p194
+The following versions contain \`1.0.3' in the name:
+  1.0.3-rc1
+  1.0.3-rc2
 
 See all available versions with \`jlenv install --list'.
 
@@ -80,7 +80,7 @@ OUT
   stub_julia_build 'echo ERROR >&2 && exit 2' \
     "--definitions : true"
 
-  run jlenv-install 1.9.3
+  run jlenv-install 1.0.3
   assert_failure
   assert_output <<OUT
 ERROR
@@ -100,7 +100,7 @@ OUT
   refute [ -e "${JLENV_ROOT}/plugins" ]
   stub_julia_build 'echo $JULIA_BUILD_DEFINITIONS'
 
-  run jlenv-install 2.1.2
+  run jlenv-install 1.0.4
   assert_success ""
 }
 
@@ -109,7 +109,7 @@ OUT
   mkdir -p "${JLENV_ROOT}/plugins/bar/share/julia-build"
   stub_julia_build "echo \$JULIA_BUILD_DEFINITIONS | tr ':' $'\\n'"
 
-  run jlenv-install 2.1.2
+  run jlenv-install 1.0.4
   assert_success
   assert_output <<OUT
 
@@ -167,7 +167,7 @@ OUT
   stub_julia_build
   stub jlenv-help 'install : true'
 
-  run jlenv-install 2.1.1 2.1.2
+  run jlenv-install 1.0.3 1.0.4
   assert_failure
   unstub jlenv-help
 }
@@ -197,7 +197,7 @@ OUT
 @test "too many arguments for jlenv-uninstall" {
   stub jlenv-help 'uninstall : true'
 
-  run jlenv-uninstall 2.1.1 2.1.2
+  run jlenv-uninstall 1.0.3 1.0.4
   assert_failure
   unstub jlenv-help
 }

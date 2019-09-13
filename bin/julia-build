@@ -12,8 +12,11 @@
 #   --definitions    List all built-in definitions
 #   --version        Show version of julia-build
 #
+# Linux Helper Packages
+#  - hostnamectl (Disambiguates Centos, Ubuntu etc.)
+#  - alternatives (Redhat family) update-alternatives (Debian family)
 
-JULIA_BUILD_VERSION="20190425"
+JULIA_BUILD_VERSION="20190821"
 
 OLDIFS="$IFS"
 
@@ -98,6 +101,14 @@ os_information() {
     local os="$(cat /etc/{centos,redhat,fedora,system}-release /etc/debian_version 2>/dev/null | head -1)"
     echo "${os:-$(uname -sr)}"
   fi
+}
+
+is_rhel() {
+  local os="$(cat /etc/{centos,redhat,fedora,system}-release 2>/dev/null | head -1)"
+  if [ "$os" = "" ]; then
+    local os="$(hostnamectl|grep -i -E 'Fedora|CentOS|redhat|"Red Hat Enterprise"' 2>/dev/null | head -1)" 
+  fi
+  [ "$os" != "" ] || return 1
 }
 
 is_mac() {
@@ -758,7 +769,31 @@ gccs_in_path() {
   done
   shopt -u nullglob
 
+  if is_mac; then
+    echo "Macintosh equivalent of update-alternatives?"
+  else
+    update_gcc 5
+  fi
+
   printf :%s "${gccs[@]}"
+}
+
+update_gcc() {
+  if [ ! -f "/usr/bin/gcc-$1" ] || [ ! -f "/usr/bin/g++-$1" ]; then
+      echo "no such version gcc/g++ installed" 1>&2
+      exit 1
+  fi
+  if is_rhel; then
+    alternatives --install /usr/bin/gcc gcc "/usr/bin/gcc-$1" 10
+    alternatives --install /usr/bin/g++ g++ "/usr/bin/g++-$1" 10
+    alternatives --set gcc "/usr/bin/gcc-$1"
+    alternatives --set g++ "/usr/bin/g++-$1"
+  else  
+    update-alternatives --install /usr/bin/gcc gcc "/usr/bin/gcc-$1" 10
+    update-alternatives --install /usr/bin/g++ g++ "/usr/bin/g++-$1" 10
+    update-alternatives --set gcc "/usr/bin/gcc-$1"
+    update-alternatives --set g++ "/usr/bin/g++-$1"
+  fi
 }
 
 verify_gcc() {
