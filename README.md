@@ -31,7 +31,16 @@ version of Julia, from source.
 It is available as a plugin for [jlenv](https://github.com/jlenv/julia-build) that
 provides the `jlenv install` command, or as a standalone program.
 
+  - [jlenv]: https://github.com/jlenv/jlenv
+  - [definitions]: https://github.com/jlenv/julia-build/tree/master/share/julia-build
+  - [wiki]: https://github.com/jlenv/julia-build/wiki
+
 ## Installation
+
+Manages gcc versions using `update-alternatives`/`alternatives`:
+
+1. Debian/Ubuntu package: `dpkg`
+1. RHEL/CentOS/Fedora package: `chkconfig`
 
 ```sh
 # As an jlenv plugin
